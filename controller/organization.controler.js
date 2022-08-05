@@ -1,73 +1,69 @@
 import Organization from "../model/organization.model.js";
-import bcryppt from "bcrypt";
+import User from "../model/user.model.js";
 import JWT from "jsonwebtoken";
+import mongoose from "mongoose";
 
-const RegisterOrganization = async (req, res) => {
-  const { orgName, adminName, email, password } = req.body;
+const CreateOrganization = async (req, res) => {
+  const { orgName, description } = req.body;
+  const token = req.header("auth-token");
+
+  const verified = await JWT.verify(token, process.env.PRIVATE_KEY);
+  const userId = verified.id;
 
   const isOrgExist = await Organization.findOne({
     organization: orgName,
   });
-  const isEmailExist = await Organization.findOne({
-    email,
-  });
-
-  const hashedPassword = await bcryppt.hash(
-    password,
-    await bcryppt.genSalt(10)
-  );
 
   if (isOrgExist) return res.send("organisasi sudah pernah terdaftar.");
-  if (isEmailExist) return res.send("email sudah digunakan");
 
   const newOrg = await new Organization({
     organization: orgName,
-    adminName,
-    email,
-    password: hashedPassword,
+    description,
+    admin: userId,
   });
 
-  try {
-    const savedOrg = await newOrg.save();
-    res.status(200).json({
-      msg: "data telah tersimpan",
-      savedOrg,
+  newOrg
+    .save()
+    .then((result) => {
+      User.findById(userId)
+        .then((ress) => {
+          ress.organization.push({ _id: result.id });
+          ress.save();
+        })
+        .catch((err) =>
+          res.status(500).json({
+            status: "error",
+            msg: err,
+          })
+        );
+      return res.status(200).json({
+        status: "success",
+        result,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        status: "error",
+        msg: err,
+      });
     });
-  } catch (error) {
-    res.status(500).json(error);
-  }
 };
 
-const LoginOrganization = async (req, res) => {
-  const { email, password } = req.body;
-
-  const isEmailExist = await Organization.findOne({ email });
-  if (!isEmailExist)
-    return res.status(404).json({
-      error: "terjadi kesalahan",
-      message: "Email tidak ditemukan",
-    });
-  const hashedPassword = isEmailExist.password;
-
-  const comparePW = await bcryppt.compare(password, hashedPassword);
-
-  if (!comparePW) return res.status(400).json("password salah");
-
-  const payload = {
-    name: isEmailExist.adminName,
-    organization: isEmailExist.organization,
-    email: isEmailExist.email,
-    id: isEmailExist.id,
-  };
-
-  const token = JWT.sign(payload, process.env.PRIVATE_KEY, {
-    algorithm: "HS256",
-  });
-
-  res.status(200).header("auth-token", token).json({
-    msg: "login berhasil",
-    token,
-  });
+const GetOrg = async (req, res) => {
+  const getAll = await Organization.find({});
+  return res.send(getAll);
 };
 
-export { RegisterOrganization, LoginOrganization };
+const OrgDetail = async (req, res) => {
+  const { orgId } = req.params;
+
+  await Organization.findById(orgId)
+    .select("_id organization admin voteEvents")
+    .populate("admin voteEvents", "name email voteTitle")
+    .then((result) => {
+      return res.status(200).json(result);
+    })
+    .catch(() => res.status(404).send("user tidak ditemukan"));
+};
+
+export { CreateOrganization, OrgDetail, GetOrg };

@@ -7,18 +7,17 @@ const Organization = mongoose.model(
       organization: {
         type: String,
       },
-      adminName: {
-        type: String,
-        required: true,
+      description: String,
+      admin: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: "User",
       },
-      email: {
-        type: String,
-        required: true,
-      },
-      password: {
-        type: String,
-        required: true,
-      },
+      voteEvents: [
+        {
+          type: mongoose.SchemaTypes.ObjectId,
+          ref: "Voteevent",
+        },
+      ],
     },
     {
       timestamps: true,
