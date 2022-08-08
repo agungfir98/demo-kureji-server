@@ -101,4 +101,44 @@ const EditEvent = async (req, res) => {
     });
 };
 
-export { AddEvent, GetEvent, EditEvent };
+const HandleVote = async (req, res) => {
+  const { eventId, candidateId } = req.params;
+
+  const payload = req.user;
+
+  const update = {
+    $inc: {
+      "candidates.$[elem].numOfVotes": 1,
+    },
+    $set: {
+      "registeredVoters.$[voter].hasVoted": true,
+    },
+  };
+  const opt = {
+    arrayFilters: [
+      {
+        "elem.person": candidateId,
+      },
+      {
+        "voter.voter": payload.id,
+      },
+    ],
+    new: true,
+  };
+
+  VoteEvent.findByIdAndUpdate(eventId, update, opt)
+    .then((result) => {
+      return res.status(200).json({
+        status: "success",
+        result,
+      });
+    })
+    .catch((err) => {
+      return res.status(500).json({
+        status: "error",
+        msg: err,
+      });
+    });
+};
+
+export { AddEvent, GetEvent, EditEvent, HandleVote };

@@ -10,6 +10,7 @@ import {
   AddEvent,
   GetEvent,
   EditEvent,
+  HandleVote,
 } from "../controller/voteEvent.controller.js";
 
 import {
@@ -34,5 +35,7 @@ router.get("/org/:orgId/events/:eventId", GetEvent);
 router.put("/org/:orgId/events/:eventId", AuthAdmin, EditEvent);
 
 router.post("/user", LoginUser);
+
+router.put("/vote/:eventId/:candidateId", runAuth, HandleVote);
 
 export default router;
