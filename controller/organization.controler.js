@@ -1,14 +1,10 @@
 import Organization from "../model/organization.model.js";
 import User from "../model/user.model.js";
-import JWT from "jsonwebtoken";
-import mongoose from "mongoose";
 
 const CreateOrganization = async (req, res) => {
   const { orgName, description } = req.body;
-  const token = req.header("auth-token");
 
-  const verified = await JWT.verify(token, process.env.PRIVATE_KEY);
-  const userId = verified.id;
+  const userId = req.user.id;
 
   const isOrgExist = await Organization.findOne({
     organization: orgName,

@@ -1,7 +1,6 @@
 import VoteEvent from "../model/voteEvent.model.js";
 import Organization from "../model/organization.model.js";
 import User from "../model/user.model.js";
-import JWT from "jsonwebtoken";
 
 const AddEvent = async (req, res) => {
   const { orgId } = req.params;
