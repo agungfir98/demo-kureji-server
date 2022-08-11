@@ -1,6 +1,6 @@
 import User from "../model/user.model.js";
 import bcrypt from "bcrypt";
-import JWT from "jsonwebtoken";
+import { createAccessToken, createRefreshToken } from "../auth/handler.js";
 
 const RegisterUser = async (req, res) => {
   const { email, name, password, confirmPw } = req.body;
@@ -37,11 +37,24 @@ const LoginUser = async (req, res) => {
 
   const isUserExist = await User.findOne({ email });
 
-  if (!isUserExist) return res.status(404).send("User Tidak ditemukan");
+  if (!isUserExist)
+    return res.status(404).json({
+      status: "error",
+      form: "email",
+      msg: "User dengan email ini tidak ditemukan",
+    });
 
   const compare = await bcrypt.compare(password, isUserExist.password);
 
-  if (!compare) return res.status(400).send("password salah!");
+  if (!compare)
+    return res.status(400).json({
+      status: "error",
+      form: "password",
+      msg: "Password salah",
+    });
+
+  if (!isUserExist.token_version) isUserExist.set("token_version", 0).save();
+
   const { id, email: emailDB, name } = isUserExist;
 
   const payload = {
@@ -50,14 +63,23 @@ const LoginUser = async (req, res) => {
     name,
   };
 
-  const token = JWT.sign(payload, process.env.PRIVATE_KEY, {
-    algorithm: "HS256",
-  });
+  const token = createAccessToken(payload);
 
-  res.status(200).header("auth-token", token).json({
-    msg: "login berhasil",
-    token,
-  });
+  res
+    .status(200)
+    .header("auth-token")
+    .cookie(
+      "gid",
+      createRefreshToken({
+        ...payload,
+        tokenVersion: isUserExist.tokenVersion,
+      }),
+      { httpOnly: true }
+    )
+    .json({
+      msg: "login berhasil",
+      token,
+    });
 };
 
 const GetUser = async (req, res) => {
@@ -93,4 +115,10 @@ const GetUsers = async (req, res) => {
     );
 };
 
-export { RegisterUser, LoginUser, GetUser, GetUsers };
+const LogoutUser = async (req, res) => {
+  res.status(200).cookie("gid", "", { httpOnly: true }).json({
+    msg: "loged out",
+  });
+};
+
+export { RegisterUser, LoginUser, GetUser, GetUsers, LogoutUser };

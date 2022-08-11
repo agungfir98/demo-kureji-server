@@ -6,7 +6,8 @@ export async function runAuth(req, res, next) {
   if (!tokenHeader) return res.status(401).send("akses ditolak");
 
   try {
-    const verified = JWT.verify(tokenHeader, process.env.PRIVATE_KEY);
+    const token = tokenHeader.split(" ")[1];
+    const verified = JWT.verify(token, process.env.PRIVATE_KEY);
     // const decode = JWT.decode(tokenHeader, { complete: true, json: true });
     req.user = verified;
     next();

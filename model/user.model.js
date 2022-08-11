@@ -30,6 +30,10 @@ const User = mongoose.model(
         voteTitle: String,
       },
     ],
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
   })
 );
 export default User;

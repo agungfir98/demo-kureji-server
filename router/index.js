@@ -18,15 +18,20 @@ import {
   LoginUser,
   GetUser,
   GetUsers,
+  LogoutUser,
 } from "../controller/user.controller.js";
 import { AuthAdmin, runAuth } from "../middleware/index.js";
+import { refreshToken } from "../controller/refreshToken.controller.js";
+import { resetPassword } from "../controller/resetPassword.controller.js";
 
 router.post("/register_user", RegisterUser);
 router.post("/login", LoginUser);
 router.post("/create_organization", runAuth, CreateOrganization);
 
+router.post("/refresh_token", refreshToken);
+
 router.get("/user/:id", GetUser);
-router.get("/users", GetUsers);
+router.get("/users", runAuth, GetUsers);
 
 router.get("/org", GetOrg);
 router.get("/org/:orgId", OrgDetail);
@@ -37,5 +42,8 @@ router.put("/org/:orgId/events/:eventId", AuthAdmin, EditEvent);
 router.post("/user", LoginUser);
 
 router.put("/vote/:eventId/:candidateId", runAuth, HandleVote);
+
+router.post("/reset_password", resetPassword);
+router.post("/logout", LogoutUser);
 
 export default router;
