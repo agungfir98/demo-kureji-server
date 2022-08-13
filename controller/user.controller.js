@@ -7,10 +7,15 @@ const RegisterUser = async (req, res) => {
 
   const isEmailExist = await User.findOne({ email: email });
 
-  if (isEmailExist) return res.send("email sudah digunakan");
+  if (isEmailExist)
+    return res
+      .status(400)
+      .json({ form: "email", msg: "email sudah digunakan" });
 
   if (password !== confirmPw)
-    return res.status(400).send("password tidak sama");
+    return res
+      .status(400)
+      .json({ form: "password", msg: "password tidak sama" });
 
   const hashedPassword = await bcrypt.hash(password, await bcrypt.genSalt(10));
 
