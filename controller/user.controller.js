@@ -88,8 +88,8 @@ const LoginUser = async (req, res) => {
 };
 
 const GetUser = async (req, res) => {
-  const { id } = req.params;
-  User.findById(id)
+  const userId = req.user.id;
+  User.findById(userId)
     .select("id email name organization voteParticipation")
     .then((result) => {
       res.status(200).json({
@@ -126,4 +126,25 @@ const LogoutUser = async (req, res) => {
   });
 };
 
-export { RegisterUser, LoginUser, GetUser, GetUsers, LogoutUser };
+const GetUserOrg = async (req, res) => {
+  const userId = req.user.id;
+  User.findById(userId)
+    .populate({
+      path: "organization._id",
+      model: "Organization",
+      populate: {
+        path: "admin members",
+        model: "User",
+        select: "email name _id",
+      },
+    })
+    .then((result) => {
+      return res.status(200).json({
+        status: "success",
+        data: result.organization,
+      });
+    })
+    .catch();
+};
+
+export { RegisterUser, LoginUser, GetUser, GetUsers, LogoutUser, GetUserOrg };
