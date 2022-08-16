@@ -12,6 +12,7 @@ const Organization = mongoose.model(
         type: mongoose.SchemaTypes.ObjectId,
         ref: "User",
       },
+      members: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
       voteEvents: [
         {
           type: mongoose.SchemaTypes.ObjectId,
