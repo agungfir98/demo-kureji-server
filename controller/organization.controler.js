@@ -10,12 +10,14 @@ const CreateOrganization = async (req, res) => {
     organization: orgName,
   });
 
-  if (isOrgExist) return res.send("organisasi sudah pernah terdaftar.");
+  if (isOrgExist)
+    return res.status(400).send("organisasi sudah pernah terdaftar.");
 
   const newOrg = await new Organization({
     organization: orgName,
     description,
     admin: userId,
+    members: [userId],
   });
 
   newOrg
@@ -54,8 +56,8 @@ const OrgDetail = async (req, res) => {
   const { orgId } = req.params;
 
   await Organization.findById(orgId)
-    .select("_id organization admin voteEvents")
-    .populate("admin voteEvents", "name email voteTitle")
+    .select("_id organization admin voteEvents members description")
+    .populate("admin voteEvents members", "name email voteTitle")
     .then((result) => {
       return res.status(200).json(result);
     })
