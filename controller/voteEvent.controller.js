@@ -10,7 +10,7 @@ const AddEvent = async (req, res) => {
 
   const addEvent = new VoteEvent({ voteTitle, candidates, registeredVoters });
 
-  Organization.findById(id)
+  Organization.findById(orgId)
     .then((data) => {
       if (!data)
         return res

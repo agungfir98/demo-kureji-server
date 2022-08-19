@@ -20,6 +20,7 @@ import {
   GetUsers,
   LogoutUser,
   GetUserOrg,
+  searchUser,
 } from "../controller/user.controller.js";
 import { AuthAdmin, runAuth } from "../middleware/index.js";
 import { refreshToken } from "../controller/refreshToken.controller.js";
@@ -31,6 +32,7 @@ router.post("/create_organization", runAuth, CreateOrganization);
 
 router.post("/refresh_token", refreshToken);
 
+router.post("/search_user", runAuth, searchUser);
 router.get("/user", runAuth, GetUser);
 router.get("/users", runAuth, GetUsers);
 

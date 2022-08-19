@@ -16,11 +16,12 @@ const VoteEvent = new mongoose.model(
       },
       candidates: [
         {
-          person: {
+          calonKetua: {
             type: mongoose.SchemaTypes.ObjectId,
             ref: "User",
+            required: true,
           },
-          personTwo: {
+          calonWakil: {
             type: mongoose.SchemaTypes.ObjectId,
             ref: "User",
           },

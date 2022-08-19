@@ -147,4 +147,45 @@ const GetUserOrg = async (req, res) => {
     .catch();
 };
 
-export { RegisterUser, LoginUser, GetUser, GetUsers, LogoutUser, GetUserOrg };
+const searchUser = (req, res) => {
+  const { email } = req.body;
+  User.aggregate([
+    {
+      $search: {
+        index: "default",
+        text: {
+          path: "email",
+          query: email,
+          fuzzy: {},
+        },
+      },
+    },
+    {
+      $limit: 5,
+    },
+    {
+      $project: {
+        name: 1,
+        email: 1,
+      },
+    },
+  ])
+    .then((result) => {
+      console.log(result);
+      return res.status(200).json({
+        status: "success",
+        result,
+      });
+    })
+    .catch((err) => res.status(400).json({ status: "error", err }));
+};
+
+export {
+  RegisterUser,
+  LoginUser,
+  GetUser,
+  GetUsers,
+  LogoutUser,
+  GetUserOrg,
+  searchUser,
+};
