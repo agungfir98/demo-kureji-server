@@ -130,7 +130,7 @@ const GetUserOrg = async (req, res) => {
   const userId = req.user.id;
   User.findById(userId)
     .populate({
-      path: "organization._id",
+      path: "organization",
       model: "Organization",
       populate: {
         path: "admin members",
@@ -144,7 +144,7 @@ const GetUserOrg = async (req, res) => {
         data: result.organization,
       });
     })
-    .catch();
+    .catch((err) => res.status(err.status).json({ status: "error", err }));
 };
 
 const searchUser = (req, res) => {
@@ -171,7 +171,7 @@ const searchUser = (req, res) => {
     },
   ])
     .then((result) => {
-      console.log(result);
+      // io.emit('searchResult', result)
       return res.status(200).json({
         status: "success",
         result,
