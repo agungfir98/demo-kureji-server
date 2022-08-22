@@ -1,11 +1,20 @@
 import express from "express";
+const app = express();
 import bodyParser from "body-parser";
 import "dotenv/config";
 import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+// import { Server } from "socket.io";
+// import http from "http";
+// const server = http.createServer(app);
+const { PORT } = process.env;
+// const io = new Server(server);
 
-const app = express();
+// io.on("connection", (socket) => {
+//   console.log(socket.connected);
+// });
+
 app.use(cookieParser());
 app.use(
   cors({
@@ -25,5 +34,4 @@ app.use(bodyParser.json());
 
 app.use("/", useRouter);
 
-const { PORT } = process.env;
 app.listen(PORT, () => console.log(`Server running on PORT: ${PORT}`));
