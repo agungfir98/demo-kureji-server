@@ -16,12 +16,7 @@ const User = mongoose.model(
       required: true,
     },
     organization: [
-      {
-        _id: {
-          type: mongoose.SchemaTypes.ObjectId,
-          ref: "Organization",
-        },
-      },
+      { type: mongoose.SchemaTypes.ObjectId, ref: "Organization" },
     ],
     voteParticipation: [
       {
