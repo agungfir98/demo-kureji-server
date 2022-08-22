@@ -4,6 +4,7 @@ import {
   GetOrg,
   OrgDetail,
   CreateOrganization,
+  AddMember,
 } from "../controller/organization.controler.js";
 
 import {
@@ -38,6 +39,7 @@ router.get("/users", runAuth, GetUsers);
 
 router.get("/org", runAuth, GetUserOrg);
 router.get("/org/:orgId", OrgDetail);
+router.put("/org/:orgId", AddMember);
 router.post("/org/:orgId/add_event", runAuth, AddEvent);
 router.get("/org/:orgId/events/:eventId", GetEvent);
 router.put("/org/:orgId/events/:eventId", AuthAdmin, EditEvent);
