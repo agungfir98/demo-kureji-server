@@ -13,7 +13,7 @@ const CreateOrganization = async (req, res) => {
   if (isOrgExist)
     return res.status(400).send("organisasi sudah pernah terdaftar.");
 
-  const newOrg = await new Organization({
+  const newOrg = new Organization({
     organization: orgName,
     description,
     admin: userId,
@@ -22,12 +22,11 @@ const CreateOrganization = async (req, res) => {
 
   newOrg
     .save()
-    .then((result) => {
-      User.findById(userId)
-        .then((ress) => {
-          ress.organization.push({ _id: result.id });
-          ress.save();
-        })
+    .then(async (result) => {
+      await User.findByIdAndUpdate(userId, {
+        $addToSet: { organization: result.id },
+      })
+        .then((ress) => {})
         .catch((err) =>
           res.status(500).json({
             status: "error",
@@ -64,4 +63,24 @@ const OrgDetail = async (req, res) => {
     .catch(() => res.status(404).send("user tidak ditemukan"));
 };
 
-export { CreateOrganization, OrgDetail, GetOrg };
+const AddMember = async (req, res) => {
+  const { id } = req.body;
+  const { orgId } = req.params;
+
+  await Organization.findByIdAndUpdate(
+    orgId,
+    { $addToSet: { members: id } },
+    { new: true }
+  )
+    .then(async (result) => {
+      await User.findByIdAndUpdate(id, {
+        $addToSet: { organization: orgId },
+      });
+      return res.status(200).json({ status: "success", result });
+    })
+    .catch((err) => {
+      return res.status(500).json({ status: "error", msg: err.message });
+    });
+};
+
+export { CreateOrganization, OrgDetail, GetOrg, AddMember };
