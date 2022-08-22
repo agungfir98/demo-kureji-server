@@ -5,15 +5,7 @@ import "dotenv/config";
 import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-// import { Server } from "socket.io";
-// import http from "http";
-// const server = http.createServer(app);
 const { PORT } = process.env;
-// const io = new Server(server);
-
-// io.on("connection", (socket) => {
-//   console.log(socket.connected);
-// });
 
 app.use(cookieParser());
 app.use(
