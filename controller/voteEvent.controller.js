@@ -4,11 +4,9 @@ import User from "../model/user.model.js";
 
 const AddEvent = async (req, res) => {
   const { orgId } = req.params;
-  const { voteTitle, candidates, registeredVoters } = req.body;
+  const { voteTitle, candidates } = req.body;
   const isExist = await VoteEvent.findOne({ voteTitle });
   if (isExist) return res.send("udah ada");
-
-  const addEvent = new VoteEvent({ voteTitle, candidates, registeredVoters });
 
   Organization.findById(orgId)
     .then((data) => {
@@ -16,26 +14,35 @@ const AddEvent = async (req, res) => {
         return res
           .status(404)
           .json({ status: "error", msg: "Organization cannot be found" });
-    })
-    .catch((err) => res.status(500).send("something wrong with the server"));
-
-  addEvent
-    .save()
+      return data;
+    }) // check if organization exists
+    .then(async (data) => {
+      const registeredVoters = data.members.map((v, i) => {
+        return { voter: v };
+      });
+      const addEvent = new VoteEvent({
+        voteTitle,
+        candidates,
+        registeredVoters,
+      });
+      return addEvent.save();
+    }) // create new voteEvent instance and save
     .then((result) => {
-      Organization.findById(id).then((ress) => {
-        ress.voteEvents.push({ _id: result.id });
-        return ress.save();
-      });
-      return res.status(200).json({
-        msg: "event berhasil dibuat",
-        result,
-        request: {
-          type: "GET",
-          url: `http://localhost:3000/org/${id}/events/${result.id}`,
+      return Organization.findByIdAndUpdate(
+        orgId,
+        {
+          $addToSet: { voteEvents: result.id },
         },
+        { new: true }
+      );
+    }) // findOneandupdate, insert voteEvent to organization
+    .then((result) => {
+      return res.status(200).json({
+        status: "success",
+        result,
       });
-    })
-    .catch((e) => res.status(500).json({ msg: e }));
+    }) // retuern result output */
+    .catch((err) => res.send(err.message)); // handle error
 };
 
 const GetEvent = async (req, res) => {
