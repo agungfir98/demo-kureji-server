@@ -55,8 +55,8 @@ const OrgDetail = async (req, res) => {
   const { orgId } = req.params;
 
   await Organization.findById(orgId)
-    .select("_id organization admin voteEvents members description")
-    .populate("admin voteEvents members", "name email voteTitle")
+    .select("_id organization admin voteEvents members description voteTitle")
+    .populate("admin voteEvents members", "name email voteTitle isActive")
     .then((result) => {
       return res.status(200).json(result);
     })
