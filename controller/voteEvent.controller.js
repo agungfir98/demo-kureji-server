@@ -24,6 +24,7 @@ const AddEvent = async (req, res) => {
         voteTitle,
         candidates,
         registeredVoters,
+        holder: orgId,
       });
       return addEvent.save();
     }) // create new voteEvent instance and save
@@ -50,8 +51,8 @@ const GetEvent = async (req, res) => {
 
   VoteEvent.findById(eventId)
     .populate(
-      "candidates.person registeredVoters.voter",
-      "voteTitle isActive candidates registeredVoters voter _id email name"
+      "registeredVoters.voter holder",
+      "voteTitle isActive candidates registeredVoters voter _id email name organization"
     )
     .then((result) => {
       res.status(200).send(result);

@@ -7,6 +7,10 @@ const VoteEvent = new mongoose.model(
       voteTitle: {
         type: String,
       },
+      holder:{
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'Organization'
+      },
       isActive: {
         type: Boolean,
         default: false,
