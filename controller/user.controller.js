@@ -90,6 +90,19 @@ const LoginUser = async (req, res) => {
 const GetUser = async (req, res) => {
   const userId = req.user.id;
   User.findById(userId)
+    .populate({
+      path: "organization",
+      model: "Organization",
+      populate: {
+        path: "voteEvents",
+        model: "Voteevent",
+        populate: {
+          path: "holder",
+          model: "Organization",
+          select: "organization",
+        },
+      },
+    })
     .select("id email name organization voteParticipation")
     .then((result) => {
       res.status(200).json({
@@ -100,7 +113,7 @@ const GetUser = async (req, res) => {
     .catch((err) => {
       res.status(500).json({
         status: "error",
-        msg: `user dengan id ${id} tidak ditemukan`,
+        msg: `user dengan id ${userId} tidak ditemukan`,
       });
     });
 };
@@ -144,7 +157,9 @@ const GetUserOrg = async (req, res) => {
         data: result.organization,
       });
     })
-    .catch((err) => res.status(err.status).json({ status: "error", err }));
+    .catch((err) =>
+      res.status(500).json({ status: "error", msg: err.message })
+    );
 };
 
 const searchUser = (req, res) => {
