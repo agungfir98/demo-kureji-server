@@ -21,19 +21,24 @@ export async function AuthAdmin(req, res, next) {
   const { orgId, eventId } = req.params;
 
   if (!tokenHeader) return res.status(401).send("akses ditolak");
-
-  const verify = JWT.verify(tokenHeader, process.env.PRIVATE_KEY);
-  Organization.findById(orgId)
-    .then((result) => {
-      console.log(verify.id === result.admin.toString());
-      if (verify.id !== result.admin.toString())
-        return res.status(403).json({
-          status: "forbidden",
-          msg: "You don't have permission to perform this action",
-        });
-      next();
-    })
-    .catch((err) => {
-      return res.status(401).send({ error: err });
-    });
+  try {
+    const token = tokenHeader.split(" ")[1];
+    const verified = JWT.verify(token, process.env.PRIVATE_KEY);
+    Organization.findById(orgId)
+      .then((result) => {
+        if (verify.id !== result.admin.toString()) {
+          return res.status(403).json({
+            status: "forbidden",
+            msg: "You don't have permission to perform this action",
+          });
+        }
+        req.user = verified;
+      })
+      .catch((err) => {
+        return res.status(500).send({ error: err });
+      });
+    next();
+  } catch (error) {
+    return res.status(401).send("Invalid token");
+  }
 }
