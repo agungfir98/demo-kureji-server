@@ -55,7 +55,7 @@ const GetEvent = async (req, res) => {
       "voteTitle isActive candidates registeredVoters voter _id email name organization"
     )
     .then((result) => {
-      res.status(200).send(result);
+      res.status(200).json({ status: "success", result });
     })
     .catch((e) =>
       res.status(500).send({
@@ -148,4 +148,24 @@ const HandleVote = async (req, res) => {
     });
 };
 
-export { AddEvent, GetEvent, EditEvent, HandleVote };
+const StartEvent = async (req, res) => {
+  const { orgId, eventId } = req.params;
+  const { isActive } = req.body;
+  VoteEvent.findByIdAndUpdate(eventId, { isActive }, { new: true })
+    .populate("registeredVoters.voter holder")
+    .then((result) => {
+      if (!result) {
+        return res
+          .status(400)
+          .json({ status: "terjadi kesalahan", msg: "data tidak ditemukan" });
+      }
+      return res.status(200).json({ status: "success", result });
+    })
+    .catch((err) => {
+      return res
+        .status(500)
+        .json({ status: "error", msg: "layanan sedang tidak tersedia" });
+    });
+};
+
+export { AddEvent, GetEvent, EditEvent, HandleVote, StartEvent };
