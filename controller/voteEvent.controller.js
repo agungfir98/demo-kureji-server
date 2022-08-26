@@ -1,6 +1,8 @@
 import VoteEvent from "../model/voteEvent.model.js";
 import Organization from "../model/organization.model.js";
 import User from "../model/user.model.js";
+import { isUserTheAdmin } from "../middleware/index.js";
+import { isAdmin } from "../utils/index.js";
 
 const AddEvent = async (req, res) => {
   const { orgId } = req.params;
@@ -47,15 +49,22 @@ const AddEvent = async (req, res) => {
 };
 
 const GetEvent = async (req, res) => {
-  const { eventId } = req.params;
+  const { eventId, orgId } = req.params;
+  const { id } = req.user;
 
   VoteEvent.findById(eventId)
     .populate(
       "registeredVoters.voter holder",
-      "voteTitle isActive candidates registeredVoters voter _id email name organization"
+      "voteTitle isActive candidates registeredVoters voter _id email name organization admin"
     )
     .then((result) => {
-      res.status(200).json({ status: "success", result });
+      res
+        .status(200)
+        .json({
+          status: "success",
+          isAdmin: isAdmin(result.holder.admin, id),
+          result,
+        });
     })
     .catch((e) =>
       res.status(500).send({
@@ -151,8 +160,16 @@ const HandleVote = async (req, res) => {
 const StartEvent = async (req, res) => {
   const { orgId, eventId } = req.params;
   const { isActive } = req.body;
-  VoteEvent.findByIdAndUpdate(eventId, { isActive }, { new: true })
-    .populate("registeredVoters.voter holder")
+  const { id, email, name } = req.user;
+
+  isUserTheAdmin(orgId, id)
+    .then(() => {
+      return VoteEvent.findByIdAndUpdate(
+        eventId,
+        { isActive },
+        { new: true }
+      ).populate("registeredVoters.voter holder");
+    })
     .then((result) => {
       if (!result) {
         return res
@@ -162,9 +179,9 @@ const StartEvent = async (req, res) => {
       return res.status(200).json({ status: "success", result });
     })
     .catch((err) => {
-      return res
-        .status(500)
-        .json({ status: "error", msg: "layanan sedang tidak tersedia" });
+      if (err.status === "403") return res.status(403).send(err.msg);
+
+      return res.status(500).send(err);
     });
 };
 
