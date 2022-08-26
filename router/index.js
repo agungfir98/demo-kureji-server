@@ -24,7 +24,7 @@ import {
   GetUserOrg,
   searchUser,
 } from "../controller/user.controller.js";
-import { AuthAdmin, runAuth } from "../middleware/index.js";
+import { runAuth } from "../middleware/index.js";
 import { refreshToken } from "../controller/refreshToken.controller.js";
 import { resetPassword } from "../controller/resetPassword.controller.js";
 
@@ -43,7 +43,7 @@ router.get("/org/:orgId", OrgDetail);
 router.put("/org/:orgId", AddMember);
 router.post("/org/:orgId/add_event", runAuth, AddEvent);
 router.get("/org/:orgId/event/:eventId", runAuth, GetEvent);
-router.put("/org/:orgId/event/:eventId", AuthAdmin, EditEvent);
+router.put("/org/:orgId/event/:eventId", runAuth, EditEvent);
 router.put("/org/:orgId/event/:eventId/start", runAuth, StartEvent);
 
 router.post("/user", LoginUser);
