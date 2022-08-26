@@ -39,8 +39,8 @@ router.get("/user", runAuth, GetUser);
 router.get("/users", runAuth, GetUsers);
 
 router.get("/org", runAuth, GetUserOrg);
-router.get("/org/:orgId", OrgDetail);
-router.put("/org/:orgId", AddMember);
+router.get("/org/:orgId", runAuth, OrgDetail);
+router.put("/org/:orgId", runAuth, AddMember);
 router.post("/org/:orgId/add_event", runAuth, AddEvent);
 router.get("/org/:orgId/event/:eventId", runAuth, GetEvent);
 router.put("/org/:orgId/event/:eventId", runAuth, EditEvent);

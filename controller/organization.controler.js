@@ -1,5 +1,7 @@
+import { isUserTheAdmin } from "../middleware/index.js";
 import Organization from "../model/organization.model.js";
 import User from "../model/user.model.js";
+import { isAdmin } from "../utils/index.js";
 
 const CreateOrganization = async (req, res) => {
   const { orgName, description } = req.body;
@@ -53,12 +55,17 @@ const GetOrg = async (req, res) => {
 
 const OrgDetail = async (req, res) => {
   const { orgId } = req.params;
+  const { id } = req.user;
 
   await Organization.findById(orgId)
     .select("_id organization admin voteEvents members description voteTitle")
     .populate("admin voteEvents members", "name email voteTitle isActive")
     .then((result) => {
-      return res.status(200).json(result);
+      return res.status(200).json({
+        status: "success",
+        isAdmin: isAdmin(result.admin._id, id),
+        result,
+      });
     })
     .catch(() => res.status(404).send("user tidak ditemukan"));
 };
@@ -66,12 +73,16 @@ const OrgDetail = async (req, res) => {
 const AddMember = async (req, res) => {
   const { id } = req.body;
   const { orgId } = req.params;
+  const { id: userId } = req.user;
 
-  await Organization.findByIdAndUpdate(
-    orgId,
-    { $addToSet: { members: id } },
-    { new: true }
-  )
+  isUserTheAdmin(orgId, userId)
+    .then(() => {
+      return Organization.findByIdAndUpdate(
+        orgId,
+        { $addToSet: { members: id } },
+        { new: true }
+      ).populate("members", "name email");
+    })
     .then(async (result) => {
       await User.findByIdAndUpdate(id, {
         $addToSet: { organization: orgId },
