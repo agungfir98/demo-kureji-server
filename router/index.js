@@ -48,7 +48,7 @@ router.put("/org/:orgId/event/:eventId/start", runAuth, StartEvent);
 
 router.post("/user", LoginUser);
 
-router.put("/vote/:eventId/:candidateId", runAuth, HandleVote);
+router.put("/vote/:eventId", runAuth, HandleVote);
 
 router.post("/reset_password", resetPassword);
 router.post("/logout", LogoutUser);
