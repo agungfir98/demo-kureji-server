@@ -1,15 +1,15 @@
 import mongoose from "mongoose";
 
-const VoteEvent = new mongoose.model(
+const VoteEvent = mongoose.model(
   "Voteevent",
   new mongoose.Schema(
     {
       voteTitle: {
         type: String,
       },
-      holder:{
+      holder: {
         type: mongoose.SchemaTypes.ObjectId,
-        ref: 'Organization'
+        ref: "Organization",
       },
       isActive: {
         type: Boolean,
