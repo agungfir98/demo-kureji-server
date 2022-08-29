@@ -2,7 +2,7 @@ import VoteEvent from "../model/voteEvent.model.js";
 import Organization from "../model/organization.model.js";
 import User from "../model/user.model.js";
 import { isUserTheAdmin } from "../middleware/index.js";
-import { isAdmin } from "../utils/index.js";
+import { checkHasVote, isAdmin } from "../utils/index.js";
 
 const AddEvent = async (req, res) => {
   const { orgId } = req.params;
@@ -58,13 +58,12 @@ const GetEvent = async (req, res) => {
       "voteTitle isActive candidates registeredVoters voter _id email name organization admin"
     )
     .then((result) => {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          isAdmin: isAdmin(result.holder.admin, id),
-          result,
-        });
+      res.status(200).json({
+        status: "success",
+        hasVoted: checkHasVote(result.registeredVoters, id),
+        isAdmin: isAdmin(result.holder.admin, id),
+        result,
+      });
     })
     .catch((e) =>
       res.status(500).send({
@@ -118,13 +117,14 @@ const EditEvent = async (req, res) => {
 };
 
 const HandleVote = async (req, res) => {
-  const { eventId, candidateId } = req.params;
+  const { eventId } = req.params;
+  const { candidateId } = req.body;
 
-  const payload = req.user;
+  const { id: userId } = req.user;
 
   const update = {
     $inc: {
-      "candidates.$[elem].numOfVotes": 1,
+      "candidates.$[candidate].numOfVotes": 1,
     },
     $set: {
       "registeredVoters.$[voter].hasVoted": true,
@@ -133,23 +133,40 @@ const HandleVote = async (req, res) => {
   const opt = {
     arrayFilters: [
       {
-        "elem.person": candidateId,
+        "candidate._id": candidateId,
       },
       {
-        "voter.voter": payload.id,
+        "voter.voter": userId,
       },
     ],
     new: true,
   };
 
-  VoteEvent.findByIdAndUpdate(eventId, update, opt)
+  VoteEvent.findById(eventId)
+    .populate("holder registeredVoters.voter", "email name")
+    .then(async (result) => {
+      const alreadyVote = checkHasVote(result.registeredVoters, userId);
+
+      if (alreadyVote)
+        throw { status: 400, msg: "You cannot vote more than once per event" };
+
+      return VoteEvent.findByIdAndUpdate(eventId, update, opt).populate(
+        "holder registeredVoters.voter",
+        "email name"
+      );
+    })
     .then((result) => {
+      console.log(result);
       return res.status(200).json({
         status: "success",
+        hasVote: checkHasVote(result.registeredVoters, userId),
         result,
       });
     })
     .catch((err) => {
+      if (err.status === 400)
+        return res.status(400).json({ status: "error", msg: err.msg });
+
       return res.status(500).json({
         status: "error",
         msg: err,
