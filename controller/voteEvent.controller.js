@@ -156,10 +156,9 @@ const HandleVote = async (req, res) => {
       );
     })
     .then((result) => {
-      console.log(result);
       return res.status(200).json({
         status: "success",
-        hasVote: checkHasVote(result.registeredVoters, userId),
+        hasVoted: checkHasVote(result.registeredVoters, userId),
         result,
       });
     })
