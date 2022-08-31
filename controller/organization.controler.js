@@ -24,18 +24,27 @@ const CreateOrganization = async (req, res) => {
 
   newOrg
     .save()
-    .then(async (result) => {
-      await User.findByIdAndUpdate(userId, {
-        $addToSet: { organization: result.id },
-      })
-        .then((ress) => {})
-        .catch((err) =>
-          res.status(500).json({
-            status: "error",
-            msg: err,
-          })
-        );
-      return res.status(200).json({
+    .then((result) => {
+      return User.findByIdAndUpdate(
+        userId,
+        {
+          $addToSet: {
+            organization: result._id,
+          },
+        },
+        { new: true }
+      ).populate({
+        path: "organization",
+        model: "Organization",
+        populate: {
+          path: "admin members",
+          model: "User",
+          select: "email name _id",
+        },
+      });
+    })
+    .then((result) => {
+      res.status(200).json({
         status: "success",
         result,
       });
