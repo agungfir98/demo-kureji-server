@@ -5,12 +5,12 @@ import "dotenv/config";
 import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-const { PORT } = process.env;
+const { PORT, ORIGIN } = process.env;
 
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ORIGIN,
     credentials: true,
   })
 );
