@@ -28,7 +28,7 @@ import { runAuth } from "../middleware/index.js";
 import { refreshToken } from "../controller/refreshToken.controller.js";
 import { resetPassword } from "../controller/resetPassword.controller.js";
 
-router.get("/", (req, res) => res.send("hiii"));
+router.get("/", (req, res) => res.send("haloo"));
 router.post("/register_user", RegisterUser);
 router.post("/login", LoginUser);
 router.post("/create_organization", runAuth, CreateOrganization);
