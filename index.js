@@ -5,6 +5,7 @@ import "dotenv/config";
 import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import useRouter from "./router/index.js";
 const { PORT, ORIGIN } = process.env;
 
 app.use(cookieParser());
@@ -20,12 +21,10 @@ mongoose
   .then((res) => console.log("Databse berhasil terhubung"))
   .catch((e) => console.log(e));
 
-import useRouter from "./router/index.js";
-
 app.use(bodyParser.json());
 
 app.use("/", useRouter);
 
-app.listen(PORT || 3000, () => {
-  console.log(`Server running on PORT: ${PORT}`);
+app.listen(PORT, () => {
+  console.log("app running at PORT: " + PORT);
 });
