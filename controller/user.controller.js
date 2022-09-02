@@ -134,9 +134,12 @@ const GetUsers = async (req, res) => {
 };
 
 const LogoutUser = async (req, res) => {
-  res.status(200).cookie("gid", "", { httpOnly: true }).json({
-    msg: "loged out",
-  });
+  res
+    .status(200)
+    .clearCookie("gid", { httpOnly: true, sameSite: "None", secure: true })
+    .json({
+      msg: "loged out",
+    });
 };
 
 const GetUserOrg = async (req, res) => {
