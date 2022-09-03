@@ -147,15 +147,21 @@ const HandleVote = async (req, res) => {
     .then(async (result) => {
       const alreadyVote = checkHasVote(result.registeredVoters, userId);
 
-      if (alreadyVote)
+      if (alreadyVote) {
         throw { status: 400, msg: "You cannot vote more than once per event" };
+      }
 
       return VoteEvent.findByIdAndUpdate(eventId, update, opt).populate(
         "holder registeredVoters.voter",
         "email name"
       );
     })
-    .then((result) => {
+    .then(async (result) => {
+      await User.findByIdAndUpdate(userId, {
+        $addToSet: {
+          voteParticipation: result.id,
+        },
+      });
       return res.status(200).json({
         status: "success",
         hasVoted: checkHasVote(result.registeredVoters, userId),
