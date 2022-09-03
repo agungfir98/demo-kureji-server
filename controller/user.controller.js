@@ -103,6 +103,15 @@ const GetUser = async (req, res) => {
         },
       },
     })
+    .populate({
+      path: "voteParticipation",
+      model: "Voteevent",
+      populate: {
+        path: "holder",
+        model: "Organization",
+        select: "organization _id",
+      },
+    })
     .select("id email name organization voteParticipation")
     .then((result) => {
       res.status(200).json({
