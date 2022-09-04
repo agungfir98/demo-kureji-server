@@ -58,9 +58,19 @@ const GetEvent = async (req, res) => {
       "voteTitle isActive candidates registeredVoters voter _id email name organization admin"
     )
     .then((result) => {
+      const isUserRegistered = result.registeredVoters
+        .map((voters) => {
+          return voters.voter._id.toString() === id;
+        })
+        .includes(true);
       res.status(200).json({
         status: "success",
-        hasVoted: checkHasVote(result.registeredVoters, id),
+        ...(isUserRegistered
+          ? {
+              isUserRegistered,
+              hasVoted: checkHasVote(result.registeredVoters, id),
+            }
+          : { isUserRegistered }),
         isAdmin: isAdmin(result.holder.admin, id),
         result,
       });
