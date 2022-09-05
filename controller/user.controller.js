@@ -1,6 +1,7 @@
 import User from "../model/user.model.js";
 import bcrypt from "bcrypt";
 import { createAccessToken, createRefreshToken } from "../auth/handler.js";
+import Organization from "../model/organization.model.js";
 
 const RegisterUser = async (req, res) => {
   const { email, name, password, confirmPw } = req.body;
@@ -174,12 +175,12 @@ const GetUserOrg = async (req, res) => {
     );
 };
 
-const searchUser = (req, res) => {
+const searchUser = async (req, res) => {
   const { email } = req.body;
   User.aggregate([
     {
       $search: {
-        index: "default",
+        index: "users",
         text: {
           path: "email",
           query: email,
@@ -198,13 +199,30 @@ const searchUser = (req, res) => {
     },
   ])
     .then((result) => {
-      // io.emit('searchResult', result)
       return res.status(200).json({
         status: "success",
         result,
       });
     })
     .catch((err) => res.status(400).json({ status: "error", err }));
+};
+
+const DeleteUser = async (req, res) => {
+  const { userId } = req.params;
+  console.log(userId);
+  User.findByIdAndDelete(userId)
+    .then((result) => {
+      return res.status(200).json({
+        status: "success",
+        result,
+      });
+    })
+    .catch((err) => {
+      return res.status(500).json({
+        status: "error",
+        err,
+      });
+    });
 };
 
 export {
@@ -215,4 +233,5 @@ export {
   LogoutUser,
   GetUserOrg,
   searchUser,
+  DeleteUser,
 };
