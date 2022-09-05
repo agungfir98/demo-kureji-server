@@ -4,6 +4,7 @@ import {
   OrgDetail,
   CreateOrganization,
   AddMember,
+  DeleteOrg,
 } from "../controller/organization.controler.js";
 
 import {
@@ -22,6 +23,7 @@ import {
   LogoutUser,
   GetUserOrg,
   searchUser,
+  DeleteUser,
 } from "../controller/user.controller.js";
 import { runAuth } from "../middleware/index.js";
 import { refreshToken } from "../controller/refreshToken.controller.js";
@@ -37,6 +39,7 @@ router.post("/refresh_token", refreshToken);
 router.post("/search_user", runAuth, searchUser);
 router.get("/user", runAuth, GetUser);
 router.get("/users", runAuth, GetUsers);
+router.delete("/user/:userId", runAuth, DeleteUser);
 
 router.get("/org", runAuth, GetUserOrg);
 router.get("/org/:orgId", runAuth, OrgDetail);
@@ -45,6 +48,7 @@ router.post("/org/:orgId/add_event", runAuth, AddEvent);
 router.get("/org/:orgId/event/:eventId", runAuth, GetEvent);
 router.put("/org/:orgId/event/:eventId", runAuth, EditEvent);
 router.put("/org/:orgId/event/:eventId/start", runAuth, StartEvent);
+router.delete("/org/:orgId", runAuth, DeleteOrg);
 
 router.post("/user", LoginUser);
 
