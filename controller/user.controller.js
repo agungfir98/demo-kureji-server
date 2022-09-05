@@ -209,7 +209,6 @@ const searchUser = async (req, res) => {
 
 const DeleteUser = async (req, res) => {
   const { userId } = req.params;
-  console.log(userId);
   User.findByIdAndDelete(userId)
     .then((result) => {
       return res.status(200).json({
