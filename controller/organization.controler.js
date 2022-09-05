@@ -1,6 +1,7 @@
 import { isUserTheAdmin } from "../middleware/index.js";
 import Organization from "../model/organization.model.js";
 import User from "../model/user.model.js";
+import VoteEvent from "../model/voteEvent.model.js";
 import { isAdmin } from "../utils/index.js";
 
 const CreateOrganization = async (req, res) => {
@@ -103,4 +104,28 @@ const AddMember = async (req, res) => {
     });
 };
 
-export { CreateOrganization, OrgDetail, GetOrg, AddMember };
+const DeleteOrg = (req, res) => {
+  const { id: userId } = req.user;
+  const { orgId } = req.params;
+
+  isUserTheAdmin(orgId, userId)
+    .then((result) => {
+      return Organization.findByIdAndDelete(orgId);
+    })
+    .then(async (result) => {
+      await VoteEvent.deleteMany({ id: { $in: result.voteEvents } });
+      return res.status(200).json({
+        status: "success",
+        result,
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({
+        status: "error",
+        err,
+      });
+    });
+};
+
+export { CreateOrganization, OrgDetail, GetOrg, AddMember, DeleteOrg };
