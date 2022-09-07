@@ -34,26 +34,20 @@ const CreateOrganization = async (req, res) => {
           },
         },
         { new: true }
-      )
-        .populate({
-          path: "admin",
+      ).populate({
+        path: "organization",
+        model: "Organization",
+        populate: {
+          path: "admin members",
           model: "User",
-          select: "email name",
-        })
-        .populate({
-          path: "organization",
-          model: "Organization",
-          populate: {
-            path: "admin members",
-            model: "User",
-            select: "email name _id",
-          },
-        });
+          select: "email name _id",
+        },
+      });
     })
     .then((result) => {
       res.status(200).json({
         status: "success",
-        result,
+        result: result.organization,
       });
     })
     .catch((err) => {
@@ -81,18 +75,14 @@ const OrgDetail = async (req, res) => {
         _id: result.id,
         organization: result.organization,
         admin: result.admin,
-        members: result.admin
-          .map((member) => {
-            return result.admin.map((admin) => {
-              return {
-                _id: member.id,
-                email: member.email,
-                name: member.email,
-                isAdmin: admin.id === member.id,
-              };
-            });
-          })
-          .flat(),
+        members: result.members.map((member) => {
+          return {
+            _id: member.id,
+            email: member.email,
+            name: member.name,
+            isAdmin: isAdmin(result.admin, member.id),
+          };
+        }),
         voteEvents: result.voteEvents,
       };
 
@@ -116,13 +106,31 @@ const AddMember = async (req, res) => {
         orgId,
         { $addToSet: { members: id } },
         { new: true }
-      ).populate("members", "name email");
+      ).populate("members admin", "name email");
     })
     .then(async (result) => {
       await User.findByIdAndUpdate(id, {
         $addToSet: { organization: orgId },
       });
-      return res.status(200).json({ status: "success", result });
+      const data = {
+        _id: result.id,
+        organization: result.organization,
+        admin: result.admin,
+        members: result.members.map((member) => {
+          return {
+            _id: member.id,
+            email: member.email,
+            name: member.name,
+            isAdmin: isAdmin(result.admin, member.id),
+          };
+        }),
+        voteEvents: result.voteEvents,
+      };
+      return res.status(200).json({
+        status: "success",
+        isAdmin: isAdmin(result.admin, userId),
+        result: data,
+      });
     })
     .catch((err) => {
       return res.status(500).json({ status: "error", msg: err.message });
