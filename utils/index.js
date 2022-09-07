@@ -1,5 +1,7 @@
 export const isAdmin = (eventResult, userId) => {
-  return eventResult.toString() === userId;
+  return eventResult.filter((v) => {
+    return v._id === userId;
+  });
 };
 
 export const checkHasVote = (data, userId) => {
