@@ -8,10 +8,12 @@ const Organization = mongoose.model(
         type: String,
       },
       description: String,
-      admin: {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: "User",
-      },
+      admin: [
+        {
+          type: mongoose.SchemaTypes.ObjectId,
+          ref: "User",
+        },
+      ],
       members: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
       voteEvents: [
         {
