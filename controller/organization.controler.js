@@ -19,7 +19,7 @@ const CreateOrganization = async (req, res) => {
   const newOrg = new Organization({
     organization: orgName,
     description,
-    admin: userId,
+    admin: [userId],
     members: [userId],
   });
 
@@ -34,15 +34,21 @@ const CreateOrganization = async (req, res) => {
           },
         },
         { new: true }
-      ).populate({
-        path: "organization",
-        model: "Organization",
-        populate: {
-          path: "admin members",
+      )
+        .populate({
+          path: "admin",
           model: "User",
-          select: "email name _id",
-        },
-      });
+          select: "email name",
+        })
+        .populate({
+          path: "organization",
+          model: "Organization",
+          populate: {
+            path: "admin members",
+            model: "User",
+            select: "email name _id",
+          },
+        });
     })
     .then((result) => {
       res.status(200).json({
@@ -71,10 +77,29 @@ const OrgDetail = async (req, res) => {
     .select("_id organization admin voteEvents members description voteTitle")
     .populate("admin voteEvents members", "name email voteTitle isActive")
     .then((result) => {
+      const data = {
+        _id: result.id,
+        organization: result.organization,
+        admin: result.admin,
+        members: result.admin
+          .map((member) => {
+            return result.admin.map((admin) => {
+              return {
+                _id: member.id,
+                email: member.email,
+                name: member.email,
+                isAdmin: admin.id === member.id,
+              };
+            });
+          })
+          .flat(),
+        voteEvents: result.voteEvents,
+      };
+
       return res.status(200).json({
         status: "success",
-        isAdmin: isAdmin(result.admin._id, id),
-        result,
+        isAdmin: isAdmin(result.admin, id),
+        result: data,
       });
     })
     .catch(() => res.status(404).send("user tidak ditemukan"));
