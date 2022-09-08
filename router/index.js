@@ -5,6 +5,7 @@ import {
   CreateOrganization,
   AddMember,
   DeleteOrg,
+  AddAdmin,
 } from "../controller/organization.controler.js";
 
 import {
@@ -44,6 +45,7 @@ router.delete("/user/:userId", runAuth, DeleteUser);
 router.get("/org", runAuth, GetUserOrg);
 router.get("/org/:orgId", runAuth, OrgDetail);
 router.put("/org/:orgId", runAuth, AddMember);
+router.put("/org/:orgId/add_admin", runAuth, AddAdmin);
 router.post("/org/:orgId/add_event", runAuth, AddEvent);
 router.get("/org/:orgId/event/:eventId", runAuth, GetEvent);
 router.put("/org/:orgId/event/:eventId", runAuth, EditEvent);
