@@ -65,7 +65,7 @@ const GetOrg = async (req, res) => {
 
 const OrgDetail = async (req, res) => {
   const { orgId } = req.params;
-  const { id } = req.user;
+  const { id: userId } = req.user;
 
   await Organization.findById(orgId)
     .select("_id organization admin voteEvents members description voteTitle")
@@ -88,11 +88,17 @@ const OrgDetail = async (req, res) => {
 
       return res.status(200).json({
         status: "success",
-        isAdmin: isAdmin(result.admin, id),
+        userId,
+        isAdmin: isAdmin(result.admin, userId),
         result: data,
       });
     })
-    .catch(() => res.status(404).send("user tidak ditemukan"));
+    .catch((err) => {
+      return res.status(404).json({
+        status: "error",
+        err,
+      });
+    });
 };
 
 const AddMember = async (req, res) => {
@@ -128,6 +134,7 @@ const AddMember = async (req, res) => {
       };
       return res.status(200).json({
         status: "success",
+        userId,
         isAdmin: isAdmin(result.admin, userId),
         result: data,
       });
@@ -161,4 +168,54 @@ const DeleteOrg = (req, res) => {
     });
 };
 
-export { CreateOrganization, OrgDetail, GetOrg, AddMember, DeleteOrg };
+const AddAdmin = (req, res) => {
+  const { id: userId } = req.user;
+  const { orgId } = req.params;
+  const { id: memberId } = req.body;
+
+  isUserTheAdmin(orgId, userId)
+    .then(() => {
+      return Organization.findByIdAndUpdate(
+        orgId,
+        { $addToSet: { admin: memberId } },
+        { new: true }
+      ).populate("members admin", "name email");
+    })
+    .then((result) => {
+      const data = {
+        _id: result.id,
+        organization: result.organization,
+        admin: result.admin,
+        members: result.members.map((member) => {
+          return {
+            _id: member.id,
+            email: member.email,
+            name: member.name,
+            isAdmin: isAdmin(result.admin, member.id),
+          };
+        }),
+        voteEvents: result.voteEvents,
+      };
+      res.status(200).json({
+        status: "success",
+        userId,
+        isAdmin: isAdmin(result.admin, userId),
+        result: data,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        status: "error",
+        err,
+      });
+    });
+};
+
+export {
+  CreateOrganization,
+  OrgDetail,
+  GetOrg,
+  AddMember,
+  DeleteOrg,
+  AddAdmin,
+};
