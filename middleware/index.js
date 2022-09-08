@@ -18,7 +18,7 @@ export async function runAuth(req, res, next) {
 
 export const isUserTheAdmin = async (orgId, userId) => {
   return Organization.findById(orgId).then((result) => {
-    if (userId !== result.admin.toString())
+    if (!result.admin.includes(userId))
       throw {
         status: "403",
         msg: "you are not allowed to perform this action!",
