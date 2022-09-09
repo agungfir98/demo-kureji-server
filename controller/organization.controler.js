@@ -68,12 +68,20 @@ const OrgDetail = async (req, res) => {
   const { id: userId } = req.user;
 
   await Organization.findById(orgId)
-    .select("_id organization admin voteEvents members description voteTitle")
-    .populate("admin voteEvents members", "name email voteTitle isActive")
+    .populate({
+      path: "admin members",
+      model: "User",
+      select: "name email",
+    })
+    .populate({
+      path: "voteEvents",
+      select: "voteTitle isActive",
+    })
     .then((result) => {
       const data = {
         _id: result.id,
         organization: result.organization,
+        description: result.description,
         admin: result.admin,
         members: result.members.map((member) => {
           return {
@@ -121,6 +129,7 @@ const AddMember = async (req, res) => {
       const data = {
         _id: result.id,
         organization: result.organization,
+        description: result.description,
         admin: result.admin,
         members: result.members.map((member) => {
           return {
@@ -185,6 +194,7 @@ const AddAdmin = async (req, res) => {
       const data = {
         _id: result.id,
         organization: result.organization,
+        description: result.description,
         admin: result.admin,
         members: result.members.map((member) => {
           return {
@@ -228,6 +238,7 @@ const RemoveAdmin = async (req, res) => {
       const data = {
         _id: result.id,
         organization: result.organization,
+        description: result.description,
         admin: result.admin,
         members: result.members.map((member) => {
           return {
@@ -271,6 +282,7 @@ const RemoveMember = async (req, res) => {
       const data = {
         _id: result.id,
         organization: result.organization,
+        description: result.description,
         admin: result.admin,
         members: result.members.map((member) => {
           return {
