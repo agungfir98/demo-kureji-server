@@ -50,29 +50,42 @@ const AddEvent = async (req, res) => {
 
 const GetEvent = async (req, res) => {
   const { eventId, orgId } = req.params;
-  const { id } = req.user;
+  const { id: userId } = req.user;
 
   VoteEvent.findById(eventId)
-    .populate(
-      "registeredVoters.voter holder",
-      "voteTitle isActive candidates registeredVoters voter _id email name organization admin"
-    )
+    .populate({
+      path: "holder",
+      model: "Organization",
+      select: "organization admin",
+      populate: {
+        path: "admin",
+        model: "User",
+        select: "email name",
+      },
+    })
+    .populate({
+      path: "registeredVoters.voter",
+      model: "User",
+      select: "name",
+    })
     .then((result) => {
       const isUserRegistered = result.registeredVoters
         .map((voters) => {
-          return voters.voter._id.toString() === id;
+          return voters.voter._id.toString() === userId;
         })
         .includes(true);
+
       res.status(200).json({
         status: "success",
         ...(isUserRegistered
           ? {
               isUserRegistered,
-              hasVoted: checkHasVote(result.registeredVoters, id),
+              hasVoted: checkHasVote(result.registeredVoters, userId),
             }
           : { isUserRegistered }),
-        isAdmin: isAdmin(result.holder.admin, id),
+        isAdmin: isAdmin(result.holder.admin, userId),
         result,
+        userId,
       });
     })
     .catch((e) =>
@@ -196,11 +209,22 @@ const StartEvent = async (req, res) => {
 
   isUserTheAdmin(orgId, id)
     .then(() => {
-      return VoteEvent.findByIdAndUpdate(
-        eventId,
-        { isActive },
-        { new: true }
-      ).populate("registeredVoters.voter holder");
+      return VoteEvent.findByIdAndUpdate(eventId, { isActive }, { new: true })
+        .populate({
+          path: "holder",
+          model: "Organization",
+          select: "organization admin",
+          populate: {
+            path: "admin",
+            model: "User",
+            select: "email name",
+          },
+        })
+        .populate({
+          path: "registeredVoters.voter",
+          model: "User",
+          select: "name",
+        });
     })
     .then((result) => {
       if (!result) {
