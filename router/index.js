@@ -6,6 +6,8 @@ import {
   AddMember,
   DeleteOrg,
   AddAdmin,
+  RemoveAdmin,
+  RemoveMember,
 } from "../controller/organization.controler.js";
 
 import {
@@ -46,6 +48,8 @@ router.get("/org", runAuth, GetUserOrg);
 router.get("/org/:orgId", runAuth, OrgDetail);
 router.put("/org/:orgId", runAuth, AddMember);
 router.put("/org/:orgId/add_admin", runAuth, AddAdmin);
+router.put("/org/:orgId/remove_admin", runAuth, RemoveAdmin);
+router.put("/org/:orgId/remove_member", runAuth, RemoveMember);
 router.post("/org/:orgId/add_event", runAuth, AddEvent);
 router.get("/org/:orgId/event/:eventId", runAuth, GetEvent);
 router.put("/org/:orgId/event/:eventId", runAuth, EditEvent);
