@@ -144,7 +144,7 @@ const AddMember = async (req, res) => {
     });
 };
 
-const DeleteOrg = (req, res) => {
+const DeleteOrg = async (req, res) => {
   const { id: userId } = req.user;
   const { orgId } = req.params;
 
@@ -168,7 +168,7 @@ const DeleteOrg = (req, res) => {
     });
 };
 
-const AddAdmin = (req, res) => {
+const AddAdmin = async (req, res) => {
   const { id: userId } = req.user;
   const { orgId } = req.params;
   const { id: memberId } = req.body;
@@ -179,7 +179,93 @@ const AddAdmin = (req, res) => {
         orgId,
         { $addToSet: { admin: memberId } },
         { new: true }
-      ).populate("members admin", "name email");
+      ).populate("members admin voteEvents", "name email voteTitle isActive");
+    })
+    .then((result) => {
+      const data = {
+        _id: result.id,
+        organization: result.organization,
+        admin: result.admin,
+        members: result.members.map((member) => {
+          return {
+            _id: member.id,
+            email: member.email,
+            name: member.name,
+            isAdmin: isAdmin(result.admin, member.id),
+          };
+        }),
+        voteEvents: result.voteEvents,
+      };
+      res.status(200).json({
+        status: "success",
+        userId,
+        isAdmin: isAdmin(result.admin, userId),
+        result: data,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        status: "error",
+        err,
+      });
+    });
+};
+
+const RemoveAdmin = async (req, res) => {
+  const { id: userId } = req.user;
+  const { orgId } = req.params;
+  const { id: memberId } = req.body;
+
+  isUserTheAdmin(orgId, userId)
+    .then(() => {
+      return Organization.findByIdAndUpdate(
+        orgId,
+        { $pull: { admin: memberId } },
+        { new: true }
+      ).populate("members admin voteEvents", "name email voteTitle isActive");
+    })
+    .then((result) => {
+      const data = {
+        _id: result.id,
+        organization: result.organization,
+        admin: result.admin,
+        members: result.members.map((member) => {
+          return {
+            _id: member.id,
+            email: member.email,
+            name: member.name,
+            isAdmin: isAdmin(result.admin, member.id),
+          };
+        }),
+        voteEvents: result.voteEvents,
+      };
+      res.status(200).json({
+        status: "success",
+        userId,
+        isAdmin: isAdmin(result.admin, userId),
+        result: data,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        status: "error",
+        err,
+      });
+    });
+};
+
+const RemoveMember = async (req, res) => {
+  const { id: userId } = req.user;
+  const { orgId } = req.params;
+  const { id: memberId } = req.body;
+
+  isUserTheAdmin(orgId, userId)
+    .then(() => {
+      return Organization.findByIdAndUpdate(
+        orgId,
+        { $pull: { members: memberId } },
+        { new: true }
+      ).populate("members admin voteEvents", "name email voteTitle isActive");
     })
     .then((result) => {
       const data = {
@@ -218,4 +304,6 @@ export {
   AddMember,
   DeleteOrg,
   AddAdmin,
+  RemoveAdmin,
+  RemoveMember,
 };
