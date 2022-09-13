@@ -80,7 +80,12 @@ const LoginUser = async (req, res) => {
         ...payload,
         tokenVersion: isUserExist.tokenVersion,
       }),
-      { httpOnly: false, sameSite: "None", secure: true }
+      {
+        httpOnly: false,
+        sameSite: "None",
+        secure: true,
+        expire: new Date(Date.now() + 48 * 3600000),
+      }
     )
     .json({
       msg: "login berhasil",
@@ -146,7 +151,7 @@ const GetUsers = async (req, res) => {
 const LogoutUser = async (req, res) => {
   res
     .status(200)
-    .clearCookie("gid", { httpOnly: true, sameSite: "None", secure: true })
+    .clearCookie("gid", { httpOnly: false, sameSite: "None", secure: true })
     .json({
       msg: "loged out",
     });

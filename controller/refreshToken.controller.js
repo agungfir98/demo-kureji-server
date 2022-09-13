@@ -34,7 +34,12 @@ const refreshToken = async (req, res) => {
         .cookie(
           "gid",
           createRefreshToken({ ...data, tokenVersion: result.tokenVersion }),
-          { httpOnly: false, sameSite: "None", secure: true }
+          {
+            httpOnly: false,
+            sameSite: "None",
+            secure: true,
+            expire: new Date(Date.now() + 48 * 3600000),
+          }
         )
         .json({
           status: "success",
