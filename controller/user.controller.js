@@ -80,7 +80,7 @@ const LoginUser = async (req, res) => {
         ...payload,
         tokenVersion: isUserExist.tokenVersion,
       }),
-      { httpOnly: false, sameSite: "Lax", secure: true }
+      { httpOnly: true, sameSite: "Lax", secure: true }
     )
     .json({
       msg: "login berhasil",
