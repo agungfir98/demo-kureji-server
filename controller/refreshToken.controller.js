@@ -38,7 +38,7 @@ const refreshToken = async (req, res) => {
             httpOnly: false,
             sameSite: "None",
             secure: true,
-            expire: new Date(Date.now() + 48 * 3600000),
+            expires: new Date(Date.now() + 48 * 3600000),
           }
         )
         .json({
