@@ -120,7 +120,7 @@ const AddMember = async (req, res) => {
         orgId,
         { $addToSet: { members: id } },
         { new: true }
-      ).populate("members admin", "name email");
+      ).populate("members admin voteEvents", "name email voteTitle");
     })
     .then(async (result) => {
       await User.findByIdAndUpdate(id, {
