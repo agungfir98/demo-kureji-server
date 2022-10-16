@@ -3,6 +3,7 @@ import Organization from "../model/organization.model.js";
 import User from "../model/user.model.js";
 import { isUserTheAdmin } from "../middleware/index.js";
 import { checkHasVote, isAdmin } from "../utils/index.js";
+import mongoose from "mongoose";
 
 const AddEvent = async (req, res) => {
   const { orgId } = req.params;
@@ -241,4 +242,69 @@ const StartEvent = async (req, res) => {
     });
 };
 
-export { AddEvent, GetEvent, EditEvent, HandleVote, StartEvent };
+const getSingleCandidate = async (req, res) => {
+  const { eventId, candidateId, orgId } = req.params;
+  const { id } = req.user;
+
+  isUserTheAdmin(orgId, id)
+    .then(() => {
+      return VoteEvent.findById(eventId);
+    })
+    .then((result) => {
+      const { candidates } = result;
+      const candidate = candidates.filter((v) => {
+        if (v.id === candidateId) return v;
+      });
+      res.status(200).json(candidate[0]);
+    })
+    .catch((err) => {
+      res.send(err);
+    });
+};
+
+const EditCandidate = async (req, res) => {
+  const { eventId, candidateId, orgId } = req.params;
+  let imgUrl = `${req.protocol}://${req.get("host")}/candidates/${
+    req.file.filename
+  }`;
+
+  const { calonKetua, calonWakil, description } = req.body;
+
+  isUserTheAdmin(orgId, req.user.id)
+    .then(() => {
+      return VoteEvent.findByIdAndUpdate(
+        eventId,
+        {
+          $set: {
+            "candidates.$[i].calonKetua": calonKetua,
+            "candidates.$[i].calonWakil": calonWakil,
+            "candidates.$[i].description": description,
+            "candidates.$[i].image.url": imgUrl,
+          },
+        },
+        {
+          arrayFilters: [{ "i._id": mongoose.Types.ObjectId(candidateId) }],
+          new: true,
+        }
+      );
+    })
+    .then((res) => {
+      return res.status(200).json({
+        status: "ok",
+        data: res,
+      });
+    })
+    .catch((err) => {
+      return res.send(err);
+    });
+};
+
+export {
+  AddEvent,
+  GetEvent,
+  EditEvent,
+  HandleVote,
+  StartEvent,
+  EditCandidate,
+  getSingleCandidate,
+};
