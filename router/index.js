@@ -1,4 +1,6 @@
 import express from "express";
+import multer from "multer";
+import path from "path";
 const router = express.Router();
 import {
   OrgDetail,
@@ -16,6 +18,8 @@ import {
   EditEvent,
   HandleVote,
   StartEvent,
+  EditCandidate,
+  getSingleCandidate,
 } from "../controller/voteEvent.controller.js";
 
 import {
@@ -31,6 +35,23 @@ import {
 import { runAuth } from "../middleware/index.js";
 import { refreshToken } from "../controller/refreshToken.controller.js";
 import { resetPassword } from "../controller/resetPassword.controller.js";
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./public/candidates");
+  },
+  filename: function (req, file, cb) {
+    cb(
+      null,
+      path.parse(file.originalname).name +
+        "-" +
+        Date.now() +
+        path.extname(file.originalname)
+    );
+  },
+});
+
+const upload = multer({ storage: storage });
 
 router.get("/", (req, res) => res.send("haloo"));
 router.post("/register_user", RegisterUser);
@@ -62,5 +83,17 @@ router.put("/vote/:eventId", runAuth, HandleVote);
 
 router.post("/reset_password", resetPassword);
 router.post("/logout", LogoutUser);
+
+router.get(
+  "/org/:orgId/event/:eventId/:candidateId",
+  runAuth,
+  getSingleCandidate
+);
+router.put(
+  "/org/:orgId/event/:eventId/update/:candidateId",
+  runAuth,
+  upload.single("image"),
+  EditCandidate
+);
 
 export default router;
