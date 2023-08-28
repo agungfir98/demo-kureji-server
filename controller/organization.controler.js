@@ -75,7 +75,7 @@ const OrgDetail = async (req, res) => {
     })
     .populate({
       path: "voteEvents",
-      select: "voteTitle isActive",
+      select: "voteTitle isActive status candidates",
     })
     .then((result) => {
       const data = {
@@ -169,7 +169,6 @@ const DeleteOrg = async (req, res) => {
       });
     })
     .catch((err) => {
-      console.error(err);
       return res.status(500).json({
         status: "error",
         err,
