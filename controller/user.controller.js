@@ -4,7 +4,7 @@ import { createAccessToken, createRefreshToken } from "../auth/handler.js";
 import Organization from "../model/organization.model.js";
 
 const RegisterUser = async (req, res) => {
-  const { email, name, password, confirmPw } = req.body;
+  const { email, name, password, confirmPassword } = req.body;
 
   const isEmailExist = await User.findOne({ email: email });
 
@@ -13,7 +13,7 @@ const RegisterUser = async (req, res) => {
       .status(400)
       .json({ form: "email", msg: "email sudah digunakan" });
 
-  if (password !== confirmPw)
+  if (password !== confirmPassword)
     return res
       .status(400)
       .json({ form: "password", msg: "password tidak sama" });
@@ -50,7 +50,7 @@ const LoginUser = async (req, res) => {
       msg: "User dengan email ini tidak ditemukan",
     });
 
-  const compare = await bcrypt.compare(password, isUserExist.password);
+  const compare = bcrypt.compare(password, isUserExist.password);
 
   if (!compare)
     return res.status(400).json({
