@@ -15,6 +15,11 @@ const VoteEvent = mongoose.model(
         type: Boolean,
         default: false,
       },
+      status: {
+        type: String,
+        enum: ["inactive", "active", "finished"],
+        default: "inactive",
+      },
       finishedDate: {
         type: Date,
       },
@@ -29,6 +34,9 @@ const VoteEvent = mongoose.model(
           },
           description: { type: String, required: true },
           numOfVotes: { type: Number, default: 0 },
+          image: {
+            url: { type: String },
+          },
         },
       ],
       registeredVoters: [
