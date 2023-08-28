@@ -114,7 +114,7 @@ const EditEvent = async (req, res) => {
   // not resolved yet
   const { eventId } = req.params;
 
-  const { candidates, registeredVoters, isActive } = req.body;
+  const { candidates, registeredVoters, isActive, status } = req.body;
 
   const emailArr = registeredVoters.map((v) => {
     return v.voter;
@@ -134,6 +134,7 @@ const EditEvent = async (req, res) => {
       const update = {
         $set: {
           isActive,
+          status,
           candidates: [...candidates],
           registeredVoters: [...data],
         },
@@ -218,12 +219,12 @@ const HandleVote = async (req, res) => {
 
 const StartEvent = async (req, res) => {
   const { orgId, eventId } = req.params;
-  const { isActive } = req.body;
+  const { status } = req.body;
   const { id, email, name } = req.user;
 
   isUserTheAdmin(orgId, id)
     .then(() => {
-      return VoteEvent.findByIdAndUpdate(eventId, { isActive }, { new: true })
+      return VoteEvent.findByIdAndUpdate(eventId, { status }, { new: true })
         .populate({
           path: "holder",
           model: "Organization",
