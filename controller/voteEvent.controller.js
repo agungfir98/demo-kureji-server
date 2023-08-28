@@ -3,12 +3,26 @@ import Organization from "../model/organization.model.js";
 import User from "../model/user.model.js";
 import { isUserTheAdmin } from "../middleware/index.js";
 import { checkHasVote, isAdmin } from "../utils/index.js";
+import mongoose from "mongoose";
 
 const AddEvent = async (req, res) => {
   const { orgId } = req.params;
   const { voteTitle, candidates } = req.body;
   const isExist = await VoteEvent.findOne({ voteTitle });
-  if (isExist) return res.send("udah ada");
+
+  if (!voteTitle) {
+    return res
+      .status(400)
+      .json({ status: "error", msg: "vote title shouldn't be empty" });
+  }
+  if (candidates.length < 2 || !candidates) {
+    return res
+      .status(400)
+      .send("candidates cannot be empty, and have minimal 2 candidates");
+  }
+
+  if (isExist)
+    return res.status(400).send("Event with this title already exist");
 
   Organization.findById(orgId)
     .then((data) => {
