@@ -256,4 +256,71 @@ const StartEvent = async (req, res) => {
     });
 };
 
-export { AddEvent, GetEvent, EditEvent, HandleVote, StartEvent };
+const EditCandidate = async (req, res) => {
+  const { eventId, candidateId, orgId } = req.params;
+  const { calonKetua, calonWakil, description, avatar } = req.body;
+  const withImage = !!req.file;
+
+  const imgUrl = withImage
+    ? `${req.protocol}://${req.get("host")}/candidates/${req.file.filename}`
+    : avatar;
+
+  isUserTheAdmin(orgId, req.user.id)
+    .then(() => {
+      return VoteEvent.findByIdAndUpdate(
+        eventId,
+        {
+          $set: {
+            "candidates.$[i].calonKetua": calonKetua,
+            "candidates.$[i].calonWakil": calonWakil,
+            "candidates.$[i].description": description,
+            "candidates.$[i].image.url": imgUrl,
+          },
+        },
+        {
+          arrayFilters: [{ "i._id": mongoose.Types.ObjectId(candidateId) }],
+          new: true,
+          runValidators: true,
+        }
+      );
+    })
+    .then((data) => {
+      return res.status(200).json({
+        status: "ok",
+        data,
+      });
+    })
+    .catch((err) => {
+      return res.status(400).send(err);
+    });
+};
+
+const getSingleCandidate = async (req, res) => {
+  const { eventId, candidateId, orgId } = req.params;
+  const { id } = req.user;
+
+  isUserTheAdmin(orgId, id)
+    .then(() => {
+      return VoteEvent.findById(eventId);
+    })
+    .then((result) => {
+      const { candidates } = result;
+      const candidate = candidates.filter((v) => {
+        if (v.id === candidateId) return v;
+      });
+      res.status(200).json(candidate[0]);
+    })
+    .catch((err) => {
+      res.send(err);
+    });
+};
+
+export {
+  AddEvent,
+  GetEvent,
+  EditEvent,
+  HandleVote,
+  StartEvent,
+  EditCandidate,
+  getSingleCandidate,
+};
