@@ -158,11 +158,19 @@ const DeleteOrg = async (req, res) => {
   const { orgId } = req.params;
 
   isUserTheAdmin(orgId, userId)
-    .then((result) => {
+    .then(() => {
       return Organization.findByIdAndDelete(orgId);
     })
     .then(async (result) => {
-      await VoteEvent.deleteMany({ id: { $in: result.voteEvents } });
+      if (!result.voteEvents.length) {
+        return res.status(200).json({
+          status: "success",
+          result,
+        });
+      }
+      await VoteEvent.deleteMany({
+        _id: { $in: result.voteEvents },
+      });
       return res.status(200).json({
         status: "success",
         result,
