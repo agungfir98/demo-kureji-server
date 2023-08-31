@@ -156,7 +156,11 @@ const EditEvent = async (req, res) => {
 
 const HandleVote = async (req, res) => {
   const { eventId } = req.params;
-  const { candidateId } = req.body;
+  const { candidateId, status } = req.body;
+
+  if (status === "inactive" || status === "finished") {
+    return res.status(400).json({ msg: "You cannot vote right now." });
+  }
 
   const { id: userId } = req.user;
 
