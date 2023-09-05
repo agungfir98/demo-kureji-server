@@ -6,13 +6,15 @@ const refreshToken = async (req, res) => {
   const token = req.cookies.gid;
 
   if (!token)
-    return res.status(401).json({ status: "error", msg: "no access token" });
+    return res.status(401).json({ status: "notoken", msg: "no access token" });
 
   let payload = null;
   try {
     payload = JWT.verify(token, process.env.REFRESH_PRIVATE_KEY);
   } catch (error) {
-    return res.status(401).json({ status: "error", msg: "invalid token" });
+    return res
+      .status(401)
+      .json({ status: "invalidtoken", msg: "invalid token" });
   }
 
   User.findById(payload.id)
