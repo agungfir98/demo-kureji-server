@@ -72,6 +72,7 @@ const OrgDetail = async (req, res) => {
       path: "admin members",
       model: "User",
       select: "name email",
+      options: { sort: { name: 1 } },
     })
     .populate({
       path: "voteEvents",
